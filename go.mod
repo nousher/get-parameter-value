@@ -1,4 +1,4 @@
-module Golang_Playarea/get-parameter-value
+module github.com/nousher/get-parameter-value
 
 go 1.15
 
