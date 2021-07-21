@@ -2,8 +2,6 @@ package getparameter
 
 import (
 	"fmt"
-	"log"
-	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -18,12 +16,11 @@ type ConfigValue struct {
 	ConfigMap map[string]string
 }
 
-func GetParameterValue(tempFileName string) *map[string]string {
+func GetParameterValue(tempFileName string) (map[string]string, error) {
 	var parameterData *map[string]string
 
 	if len(tempFileName) == 0 {
-		log.Printf("Please provide the config file name.")
-		os.Exit(1)
+		return nil, fmt.Errorf("Please provide the config file name.")
 	}
 
 	fmt.Println("Program has been started!!!!")
@@ -32,25 +29,27 @@ func GetParameterValue(tempFileName string) *map[string]string {
 
 	sess, err := session.NewSession()
 	if err != nil {
-		log.Printf("Error in creating new session. Error %s", err)
+		return nil, fmt.Errorf("Error in creating new session. Error %s", err)
 	}
 
 	interfaceObj.readJsonFile(&tempFileName)
 
 	if interfaceObj.DataInterface.(map[string]interface{}) == nil {
-		log.Printf("Sorry there is no data to process")
+		return nil, fmt.Errorf("Sorry there is no data to process")
 	} else {
 		parameterData = setData(&interfaceObj)
 	}
 
 	if parameterData == nil {
-		log.Printf("Sorry there is no parameterData")
-		os.Exit(1)
+		return nil, fmt.Errorf("Sorry there is no parameterData")
 	}
 
-	resultMap := getValue(sess, parameterData)
+	resultMap, err := getValue(sess, parameterData)
+	if err != nil {
+		return nil, err
+	}
 
-	return resultMap
+	return *resultMap, nil
 
 }
 
@@ -72,7 +71,7 @@ func setData(interfaceObj *DataObj) *map[string]string {
 	return &parameterPath
 }
 
-func getValue(sess *session.Session, parameterValue *map[string]string) *map[string]string {
+func getValue(sess *session.Session, parameterValue *map[string]string) (*map[string]string, error) {
 
 	var configData ConfigValue
 
@@ -89,11 +88,11 @@ func getValue(sess *session.Session, parameterValue *map[string]string) *map[str
 			},
 		)
 		if err != nil {
-			log.Printf("The error from the Get Paramter is %s, err:", err)
+			return nil, fmt.Errorf("The error from the Get Paramter is %s, err:", err)
 		}
 		tempVal1 := aws.StringValue(outputValue.Parameter.Value)
 		configData.ConfigMap[key] = tempVal1
 
 	}
-	return &configData.ConfigMap
+	return &configData.ConfigMap, nil
 }

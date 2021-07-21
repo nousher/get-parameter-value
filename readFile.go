@@ -2,24 +2,24 @@ package getparameter
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
-	"log"
 )
 
-func (data *DataObj) readJsonFile(fileName *string) {
+func (data *DataObj) readJsonFile(fileName *string) error {
 
 	if fileName == nil {
-		log.Printf("Please provide the file name.")
+		return fmt.Errorf("Please provide the file name.")
 	}
 
 	byteValue, err := ioutil.ReadFile(*fileName)
 	if err != nil {
-		log.Printf("Unable to read data %s", err)
+		return fmt.Errorf("Unable to read data %s", err)
 	}
 
 	json.Unmarshal(byteValue, &data.DataInterface)
 	if err != nil {
-		log.Printf("Error in Unmarshalling Data %s", err)
+		return fmt.Errorf("Error in Unmarshalling Data %s", err)
 	}
-
+	return nil
 }
