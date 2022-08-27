@@ -18,6 +18,7 @@ func (data *DataObj) readJsonFile(fileName *string) error {
 	}
 
 	json.Unmarshal(byteValue, &data.DataInterface)
+	fmt.Printf("data %v \n", &data)
 	if err != nil {
 		return fmt.Errorf("Error in Unmarshalling Data %s", err)
 	}

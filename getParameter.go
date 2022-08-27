@@ -27,12 +27,16 @@ func GetParameterValue(tempFileName string) (map[string]string, error) {
 
 	var interfaceObj DataObj
 
-	sess, err := session.NewSession()
-	if err != nil {
-		return nil, fmt.Errorf("Error in creating new session. Error %s", err)
-	}
+	sess := session.Must(session.NewSessionWithOptions(session.Options{
+		SharedConfigState: session.SharedConfigEnable,
+	}))
+
+	// if err != nil {
+	// 	return nil, fmt.Errorf("Error in creating new session. Error %s", err)
+	// }
 
 	interfaceObj.readJsonFile(&tempFileName)
+	fmt.Printf("interfaceObj %s", interfaceObj)
 
 	if interfaceObj.DataInterface.(map[string]interface{}) == nil {
 		return nil, fmt.Errorf("Sorry there is no data to process")
@@ -49,7 +53,7 @@ func GetParameterValue(tempFileName string) (map[string]string, error) {
 		return nil, err
 	}
 
-	return *resultMap, nil
+	return resultMap, nil
 
 }
 
@@ -71,13 +75,15 @@ func setData(interfaceObj *DataObj) *map[string]string {
 	return &parameterPath
 }
 
-func getValue(sess *session.Session, parameterValue *map[string]string) (*map[string]string, error) {
+func getValue(sess *session.Session, parameterValue *map[string]string) (map[string]string, error) {
 
 	var configData ConfigValue
 
 	configData.ConfigMap = make(map[string]string)
 
 	for key, parameter := range *parameterValue {
+
+		fmt.Printf("key %v | value %v \n\n", key, parameter)
 
 		svc := ssm.New(sess)
 
@@ -88,11 +94,11 @@ func getValue(sess *session.Session, parameterValue *map[string]string) (*map[st
 			},
 		)
 		if err != nil {
-			return nil, fmt.Errorf("The error from the Get Paramter is %s, err:", err)
+			return nil, fmt.Errorf("The error from the Get Paramter is %s", err)
 		}
 		tempVal1 := aws.StringValue(outputValue.Parameter.Value)
 		configData.ConfigMap[key] = tempVal1
 
 	}
-	return &configData.ConfigMap, nil
+	return configData.ConfigMap, nil
 }
