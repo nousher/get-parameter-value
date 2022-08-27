@@ -23,7 +23,7 @@ func GetParameterValue(tempFileName string) (map[string]string, error) {
 		return nil, fmt.Errorf("Please provide the config file name.")
 	}
 
-	fmt.Println("Program has been started!!!!")
+	fmt.Println("Getting Parameters from the Parameter Store")
 
 	var interfaceObj DataObj
 
@@ -36,8 +36,6 @@ func GetParameterValue(tempFileName string) (map[string]string, error) {
 	// }
 
 	interfaceObj.readJsonFile(&tempFileName)
-	fmt.Printf("interfaceObj %s", interfaceObj)
-
 	if interfaceObj.DataInterface.(map[string]interface{}) == nil {
 		return nil, fmt.Errorf("Sorry there is no data to process")
 	} else {
